@@ -164,10 +164,3 @@ Future Enhancements
 * Add unit testing for ETL functions
 
 
-Author
-
-Gayathri T.P
-Senior Software Engineer | Python | SQL | Airflow | PostgreSQL
-GitHub: https://github.com/tpgayathritp
-
-
