@@ -56,22 +56,19 @@ Project Structure
 
 
 airflow/
-│
-├── dags/
-│   ├── employee_etl_dag.py
-│   └── etl/
-│       ├── __init__.py
-│       ├── bronzetosilver.py
-│       └── silvertogold.py
-│
-├── logs/
-├── plugins/
-├── docker-compose.yml
-├── requirements.txt
-└── README.md
+  dags/
+     employee_etl_dag.py
+     etl/
+        __init__.py
+        bronzetosilver.py
+        silvertogold.py
+ 
+  logs/
+  plugins/
+  docker-compose.yml
+  requirements.txt
+  README.md
 
-
----
 
 Data Flow
 
