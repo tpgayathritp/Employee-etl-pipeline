@@ -1,0 +1,97 @@
+services:
+  airflow-postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow_postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:latest
+    restart: always
+
+  airflow-webserver:
+    image: apache/airflow:2.9.0
+    depends_on:
+      - airflow-postgres
+      - redis
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__CORE__FERNET_KEY: 'QG1N9hb6syp-7Y4E3lQqA4PqZ1RUOZ3IY5stKof-jtA='
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+    ports:
+      - "8081:8080"   # Airflow UI on port 8081
+    volumes:
+        - D:/Python/Dataengineer/airflow/dags:/opt/airflow/dags
+        - D:/Python/Dataengineer/airflow/logs:/opt/airflow/logs
+        - D:/Python/Dataengineer/airflow/plugins:/opt/airflow/plugins
+        - D:/Python/Dataengineer/etl:/opt/airflow/etl
+    restart: always
+    command: webserver
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.0
+    depends_on:
+      - airflow-webserver
+      - airflow-postgres
+      - redis
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+    volumes:
+        - D:/Python/Dataengineer/airflow/dags:/opt/airflow/dags
+        - D:/Python/Dataengineer/airflow/logs:/opt/airflow/logs
+        - D:/Python/Dataengineer/airflow/plugins:/opt/airflow/plugins
+        - D:/Python/Dataengineer/etl:/opt/airflow/etl
+    restart: always
+    command: scheduler
+
+  airflow-worker:
+    image: apache/airflow:2.9.0
+    depends_on:
+      - airflow-scheduler
+      - airflow-webserver
+      - airflow-postgres
+      - redis
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+    volumes:
+       - D:/Python/Dataengineer/airflow/dags:/opt/airflow/dags
+       - D:/Python/Dataengineer/airflow/logs:/opt/airflow/logs
+       - D:/Python/Dataengineer/airflow/plugins:/opt/airflow/plugins
+       - D:/Python/Dataengineer/etl:/opt/airflow/etl
+    restart: always
+    command: celery worker
+
+  airflow-init:
+    image: apache/airflow:2.9.0
+    depends_on:
+      - airflow-postgres
+      - redis
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+    volumes:
+        - D:/Python/Dataengineer/airflow/dags:/opt/airflow/dags
+        - D:/Python/Dataengineer/airflow/logs:/opt/airflow/logs
+        - D:/Python/Dataengineer/airflow/plugins:/opt/airflow/plugins
+        - D:/Python/Dataengineer/etl:/opt/airflow/etl
+    command: >
+      bash -c "
+      airflow db init &&
+      airflow users create --username airflow --password airflow --firstname admin --lastname user --role Admin --email admin@example.com
+      "
+
+volumes:
+  airflow_postgres_data:
