@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 import sys
 sys.path.append("/opt/airflow")
 
-# Import your ETL functions without creating DB engine at top-level
+# Import your ETL functions 
 from etl.bronzetosilver import bronze_to_silver
 from etl.silvertogold import silver_to_gold
 
